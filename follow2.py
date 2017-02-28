@@ -32,11 +32,6 @@ def rgb2hsv(r, g, b):
     return h, s, v
 
 
-# Connect EV3 color sensor to any sensor port
-# and check it is connected.
-
-
-
 mL = LargeMotor('outC')
 mR = LargeMotor('outA')
 
@@ -52,21 +47,12 @@ units = us.units
 cl = ColorSensor() 
 assert cl.connected, "Connect a single EV3 color sensor to any sensor port"
 
-# Connect touch sensor to any sensor port
-# and check it is connected.
-
-#ts = TouchSensor();  assert ts.connected, "Connect a touch sensor to any port"  
-# you can have 2 statements on the same line if you use a semi colon
-
 # Put the color sensor into RGB mode.
 cl.mode='RGB-RAW'
 start = time.time()
 course = 0
 last_black=0
 last_white=0
-
-#mL.run_forever(time_sp=3000, speed_sp=100)
-#mR.run_forever(time_sp=3000, speed_sp=100)
 
 try:
     while us.value()>45: #not ts.value():    # Stop program by pressing touch sensor button
@@ -81,8 +67,6 @@ try:
         #print("Red: " + str(red) + ", Green: " + str(green) + ", Blue: " + str(blue))
         [H, S, V] = rgb2hsv(red, green, blue)
         
-        #mL.run_forever( speed_sp=0.4+V*speed)
-        #mR.run_forever( speed_sp=(1.4-V)*speed)
         #print("H: " + str(H) + ", S: " + str(S) + ", V: " + str(V))
         last_black=last_black+1
         last_white=last_white+1
