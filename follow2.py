@@ -12,6 +12,8 @@ kor=0.02
 speed = 12/Ts
 slabljenje= 0.5
 
+#to je komentar
+
 
 # Set up the motor ports
 
