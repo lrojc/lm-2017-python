@@ -1,72 +1,66 @@
 #!/usr/bin/env python3
-# so that script can be run from Brickman
-# The following program was made by modifying examples from 
+# This script can be run from Brickman
+# I found a lot of help on:
 # https://sites.google.com/site/ev3python/learn_ev3_python
 
 from ev3dev.ev3 import *
 from time   import sleep
-
+from ColorConversion import rgb2hsv
+# Konstante
 Ts=0.04
 kor=0.02
 speed = 12/Ts
 slabljenje= 0.5
 
-def rgb2hsv(r, g, b):
-    r, g, b = r/255.0, g/255.0, b/255.0
-    mx = max(r, g, b)
-    mn = min(r, g, b)
-    df = mx-mn
-    if mx == mn:
-        h = 0
-    elif mx == r:
-        h = (60 * ((g-b)/df) + 360) % 360
-    elif mx == g:
-        h = (60 * ((b-r)/df) + 120) % 360
-    elif mx == b:
-        h = (60 * ((r-g)/df) + 240) % 360
-    if mx == 0:
-        s = 0
-    else:
-        s = df/mx
-    v = mx
-    return h, s, v
 
+# Set up the motor ports
 
-mL = LargeMotor('outC')
 mR = LargeMotor('outA')
+mL = LargeMotor('outC') #B port is somehow not working
+mS = MediumMotor('outD') #Sensor which turns the ultrasonic sensor
 
+# Set up the ultrasonic senso
 us = UltrasonicSensor() 
 assert us.connected, "Connect a single US sensor to any sensor port"
-# can have 2 statements on same line if use semi colon
-
-# Put the US sensor into distance mode.
 us.mode='US-DIST-CM'
-
 units = us.units
 
+# Set up the color sensor
 cl = ColorSensor() 
 assert cl.connected, "Connect a single EV3 color sensor to any sensor port"
-
-# Put the color sensor into RGB mode.
 cl.mode='RGB-RAW'
-start = time.time()
-course = 0
+# Set up the gyro sensor
+
+
+course = 0 #start direction. when it is positive program is turning right
 last_black=0
 last_white=0
 
+start = time.time()
+tmax = start
+
+
 try:
     while us.value()>45: #not ts.value():    # Stop program by pressing touch sensor button
-        start = start + Ts
-        while 0<(time.time()-start): # do nothing
-            sleep(0.0001)
-        print(str(start))
+        # Meritev maksimalnega casa ki ga zanka porabi da se izvede
+        tmp = time.time() - start
+        if tmp<tmax:
+            tmax=tmp
+        start = start+tmp
+                
+        # za doseganje konstantne frekvence vzorcenja
+        #start = start + Ts
+        #while 0<(time.time()-start): 
+        #    sleep(0.0001)
+        #print(str(start))
+
+        #Branje Color Senzorja in sledenje barvnemu traku
         red = cl.value(0)
         green=cl.value(1)
         blue=cl.value(2)
         
         #print("Red: " + str(red) + ", Green: " + str(green) + ", Blue: " + str(blue))
         [H, S, V] = rgb2hsv(red, green, blue)
-        
         #print("H: " + str(H) + ", S: " + str(S) + ", V: " + str(V))
         last_black=last_black+1
         last_white=last_white+1
@@ -81,14 +75,7 @@ try:
                 course = course - kor/(abs(course)+0.1)
             
             last_white=0
-            
-#        elif last_white<1.1 or last_black<1.1:
-#            course=0
-#            
-#            if last_black<last_white :
-#                course=course-0.001
-#            else:
-#                course=course+0.001
+
         else:
             course=course*slabljenje
 
